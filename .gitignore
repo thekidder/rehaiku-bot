@@ -36,3 +36,5 @@ nosetests.xml
 
 # Config
 config.py
+.ropeproject/history
+.ropeproject/objectdb

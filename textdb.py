@@ -46,6 +46,13 @@ class TextDb:
         return c.fetchone()[0]
 
 
+    def get_random_line(self, nick, source):
+        sql = '''select full_text from {} where nick=? and target=? order by random() limit 1'''.format(self.table_name)
+        c = self.connection.cursor()
+        c.execute(sql, (nick,source,))
+        return c.fetchone()[0]
+
+
     def add_line(self, nick, target, full_text):
         sql = '''insert into {} values (?,?,?,?)'''.format(self.table_name)
         now = datetime.datetime.utcnow().isoformat()

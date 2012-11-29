@@ -12,7 +12,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def __init__(self, server_list, nick, name, channel, recon_interval=60, **connect_params):
         super(RehaikuBot, self).__init__(server_list, nick, name, recon_interval, **connect_params)
         self.channel = channel
-        self.cmds = ['stats','haiku']
+        self.cmds = ['stats','haiku', 'replay']
         self.db = textdb.TextDb()
 
 
@@ -79,3 +79,10 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def _do_haiku(self, respond_target, cmd, e):
         logger.debug("_do_haiku")
         self.connection.privmsg(respond_target, "I'm sorry, Dave. I'm afraid I can't do that.")
+
+
+    def _do_replay(self, respond_target, cmd, e):
+        logger.debug("_do_replay")
+        sender = e.source.nick
+        line = self.db.get_random_line(sender,e.target)
+        self.connection.privmsg(respond_target, "<{}> {}".format(sender, line))

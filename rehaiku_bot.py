@@ -12,7 +12,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def __init__(self, server_list, nick, name, channel, recon_interval=60, **connect_params):
         super(RehaikuBot, self).__init__(server_list, nick, name, recon_interval, **connect_params)
         self.channel = channel
-        self.cmds = ['stats','haiku', 'replay']
+        self.cmds = ['stats','haiku', 'replay', 'pretentious']
         self.db = textdb.TextDb()
 
 
@@ -76,14 +76,13 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         logger.debug("_do_stats")
         sender = e.source.nick
 
-        if len(arguments.strip()) == 0:
-            user = sender
-        else:
-            user = arguments
+        nick = self._get_cmd_nick(arguments, e)
+        if nick == None:
+            return
 
-        count = self.db.get_line_count_by_nick(user)
+        count = self.db.get_line_count_by_nick(nick)
         self.connection.privmsg(respond_target, 'I have collected {} lines of dialog from {}.'.format(
-                count, user))
+                count, nick))
 
 
     def _do_haiku(self, respond_target, cmd, arguments, e):
@@ -93,9 +92,35 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
 
     def _do_replay(self, respond_target, cmd, arguments, e):
         logger.debug("_do_replay")
-        sender = e.source.nick
-        line = self.db.get_random_line(sender,e.target)
+
+        nick = self._get_cmd_nick(arguments, e)
+        if nick == None:
+            return
+
+        line = self.db.get_random_line(nick,e.target)
         if line != None:
-            self.connection.privmsg(respond_target, "<{}> {}".format(sender, line))
+            self.connection.privmsg(respond_target, "<{}> {}".format(nick, line))
         else:
-            self.connection.privmsg(respond_target, "{} has no history!".format(sender))
+            self.connection.privmsg(respond_target, "{} has no history!".format(nick))
+
+
+    def _do_pretentious(self, respond_target, cmd, arguments, e):
+        logger.debug("_do_pretentious")
+
+        nick = self._get_cmd_nick(arguments, e)
+        if nick == None:
+            return
+
+        p = text_utils.reading_level(self.db, nick)
+
+        self.connection.privmsg(respond_target, "{}'s pretentiousness level is {:.3}".format(nick, p))
+
+
+    def _get_cmd_nick(self, arguments, e):
+        arguments = arguments.split()
+        if len(arguments) > 1:
+            return None
+        elif len(arguments) == 1:
+            return arguments[0]
+        else:
+            return e.source.nick

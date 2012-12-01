@@ -3,6 +3,7 @@ import logging
 import irc.bot
 
 import config
+import text_utils
 import textdb
 
 

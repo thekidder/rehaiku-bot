@@ -47,7 +47,7 @@ class TextDb:
 
 
     def get_random_line(self, nick, source):
-        sql = '''select full_text from {} where nick=? and target=? order by random() limit 1'''.format(self.table_name)
+        sql = '''select distinct full_text from {} where nick=? and target=? order by random() limit 1'''.format(self.table_name)
         c = self.connection.cursor()
         c.execute(sql, (nick,source,))
 

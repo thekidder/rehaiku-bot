@@ -5,7 +5,7 @@ import irc.bot
 
 # server settings
 servers    = [irc.bot.ServerSpec('irc.freenode.org', 6667)]
-nick       = 'rehaiku'
+nick       = 'rehaiku^'
 name       = 'Rehaiku IRC Bot'
 channel    = '#rehaiku'
 ssl        = False

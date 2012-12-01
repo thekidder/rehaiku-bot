@@ -95,4 +95,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         logger.debug("_do_replay")
         sender = e.source.nick
         line = self.db.get_random_line(sender,e.target)
-        self.connection.privmsg(respond_target, "<{}> {}".format(sender, line))
+        if line != None:
+            self.connection.privmsg(respond_target, "<{}> {}".format(sender, line))
+        else:
+            self.connection.privmsg(respond_target, "{} has no history!".format(sender))

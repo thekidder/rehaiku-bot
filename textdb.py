@@ -50,7 +50,12 @@ class TextDb:
         sql = '''select full_text from {} where nick=? and target=? order by random() limit 1'''.format(self.table_name)
         c = self.connection.cursor()
         c.execute(sql, (nick,source,))
-        return c.fetchone()[0]
+
+        row = c.fetchone()
+        if row != None:
+            return row[0]
+        else:
+            return None
 
 
     def add_line(self, nick, target, full_text):

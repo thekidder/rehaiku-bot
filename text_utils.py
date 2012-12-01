@@ -1,5 +1,6 @@
 import re
 
+import flesch_kincaid
 import nltk
 from nltk.corpus import cmudict
 
@@ -27,14 +28,14 @@ def sentences(db, nick):
 
 
 def reading_level(db, nick):
-    sentences = text_utils.sentences(db, nick)
+    all_sentences = sentences(db, nick)
 
     avg = 0
-    for s in sentences:
+    for s in all_sentences:
         l = flesch_kincaid.grade_level(s)
         if l > 0.0:
             avg += l
 
-    avg /= len(sentences)
+    avg /= len(all_sentences)
 
     return avg

@@ -65,3 +65,10 @@ class TextDb:
         c = self.connection.cursor()
         c.execute(sql, (now,nick,target,full_text,))
         self.connection.commit()
+
+
+    def all_nicks(self):
+        sql = '''select distinct(nick) from {} order by nick'''.format(self.table_name)
+        c = self.connection.cursor()
+        c.execute(sql)
+        return [nick[0] for nick in c.fetchall()]

@@ -1,10 +1,12 @@
 import logging
+import operator
 
 import irc.bot
 
+import calculations
 import config
-import text_utils
 import textdb
+from decorators import nick_command, stats_command
 
 
 logger = logging.getLogger(__name__)
@@ -13,7 +15,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def __init__(self, server_list, nick, name, channel, recon_interval=60, **connect_params):
         super(RehaikuBot, self).__init__(server_list, nick, name, recon_interval, **connect_params)
         self.channel = channel
-        self.cmds = ['stats','haiku', 'replay', 'pretentious']
+        self.cmds = ['stats', 'haiku', 'replay', 'pretentious', 'leaderboard']
         self.db = textdb.TextDb()
 
 
@@ -73,30 +75,26 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         getattr(self, '_do_' + cmd)(respond_target, cmd, arguments, e)
 
 
-    def _do_stats(self, respond_target, cmd, arguments, e):
+    @nick_command
+    @stats_command('I have collected {} lines of dialog from {}.')
+    def _do_stats(self, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_stats")
-        sender = e.source.nick
-
-        nick = self._get_cmd_nick(arguments, e)
-        if nick == None:
-            return
-
-        count = self.db.get_line_count_by_nick(nick)
-        self.connection.privmsg(respond_target, 'I have collected {} lines of dialog from {}.'.format(
-                count, nick))
+        return "stats"
 
 
     def _do_haiku(self, respond_target, cmd, arguments, e):
+        arguments = arguments.split()
+
+        if len(arguments) > 0:
+            return
+
         logger.debug("_do_haiku")
         self.connection.privmsg(respond_target, "I'm sorry, Dave. I'm afraid I can't do that.")
 
 
-    def _do_replay(self, respond_target, cmd, arguments, e):
+    @nick_command
+    def _do_replay(self, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_replay")
-
-        nick = self._get_cmd_nick(arguments, e)
-        if nick == None:
-            return
 
         line = self.db.get_random_line(nick,e.target)
         if line != None:
@@ -105,23 +103,33 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
             self.connection.privmsg(respond_target, "{} has no history!".format(nick))
 
 
-    def _do_pretentious(self, respond_target, cmd, arguments, e):
-        logger.debug("_do_pretentious")
+    def _do_leaderboard(self, respond_target, cmd, arguments, e):
+        logger.debug("_do_leaderboard")
 
-        nick = self._get_cmd_nick(arguments, e)
-        if nick == None:
+        arguments = arguments.split()
+        if len(arguments) != 1:
             return
 
-        p = text_utils.reading_level(self.db, nick)
+        stat_name = arguments[0]
 
-        self.connection.privmsg(respond_target, "{}'s pretentiousness level is {:.3}".format(nick, p))
+        try:
+            stat_func = getattr(calculations, stat_name)
+        except AttributeError:
+            return
 
+        nicks = self.db.all_nicks()
+        stats = dict()
+        for nick in nicks:
+            stats[nick] = round(stat_func(self.db, nick), 2)
 
-    def _get_cmd_nick(self, arguments, e):
-        arguments = arguments.split()
-        if len(arguments) > 1:
-            return None
-        elif len(arguments) == 1:
-            return arguments[0]
-        else:
-            return e.source.nick
+        all = sorted(stats.items(), key=operator.itemgetter(1), reverse=True)
+        self.connection.privmsg(respond_target, "leaderboard for {}:".format(stat_name))
+        num = min(len(all), 5)
+        for i in range(num):
+            self.connection.privmsg(respond_target, "{:20}: {:6}".format(all[i][0], all[i][1]))
+
+    @nick_command
+    @stats_command("{1}'s pretentiousness level is {0:.3}")
+    def _do_pretentious(self, respond_target, cmd, arguments, e, nick):
+        logger.debug("_do_pretentious")
+        return "pretentious"

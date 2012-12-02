@@ -1,8 +1,9 @@
 import re
 
-import flesch_kincaid
 import nltk
 from nltk.corpus import cmudict
+
+import flesch_kincaid
 
 
 cmu = cmudict.dict()

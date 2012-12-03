@@ -31,6 +31,9 @@ def sentences(db, nick):
 def reading_level(db, nick):
     all_sentences = sentences(db, nick)
 
+    if len(all_sentences) == 0:
+        return 0.0
+
     avg = 0
     for s in all_sentences:
         l = flesch_kincaid.grade_level(s)

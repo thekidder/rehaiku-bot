@@ -15,7 +15,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def __init__(self, server_list, nick, name, channel, recon_interval=60, **connect_params):
         super(RehaikuBot, self).__init__(server_list, nick, name, recon_interval, **connect_params)
         self.channel = channel
-        self.cmds = ['stats', 'haiku', 'replay', 'pretentious', 'leaderboard']
+        self.cmds = ['stats', 'haiku', 'replay', 'pretentious', 'leaderboard', 'loserboard']
         self.db = textdb.TextDb()
 
 
@@ -112,6 +112,22 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
 
         stat_name = arguments[0]
 
+        return self._leaderboard(respond_target, stat_name, False)
+
+
+    def _do_loserboard(self, respond_target, cmd, arguments, e):
+        logger.debug("_do_loserboard")
+
+        arguments = arguments.split()
+        if len(arguments) != 1:
+            return
+
+        stat_name = arguments[0]
+
+        return self._leaderboard(respond_target, stat_name, True)
+
+
+    def _leaderboard(self, respond_target, stat_name, reverse):
         try:
             stat_func = getattr(calculations, stat_name)
         except AttributeError:
@@ -122,11 +138,15 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         for nick in nicks:
             stats[nick] = round(stat_func(self.db, nick), 2)
 
-        all = sorted(stats.items(), key=operator.itemgetter(1), reverse=True)
-        self.connection.privmsg(respond_target, "leaderboard for {}:".format(stat_name))
+        all = sorted(stats.items(), key=operator.itemgetter(1), reverse=not reverse)
+        name = 'leaderboard'
+        if reverse:
+            name = 'loserboard'
+        self.connection.privmsg(respond_target, "{} for {}:".format(name, stat_name))
         num = min(len(all), 5)
         for i in range(num):
             self.connection.privmsg(respond_target, "{:20}: {:6}".format(all[i][0], all[i][1]))
+
 
     @nick_command
     @stats_command("{1}'s pretentiousness level is {0:.3}")

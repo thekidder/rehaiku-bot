@@ -28,8 +28,17 @@ def sentences(db, nick):
     return all_sentences
 
 
+def distinct_sentences(db, nick):
+    all_sentences = list()
+    for row in db.get_distinct_lines_by_nick(nick):
+        text = row[0]
+        all_sentences.extend(nltk.tokenize.sent_tokenize(text))
+
+    return all_sentences
+
+
 def reading_level(db, nick):
-    all_sentences = sentences(db, nick)
+    all_sentences = distinct_sentences(db, nick)
 
     if len(all_sentences) == 0:
         return 0.0

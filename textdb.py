@@ -39,8 +39,22 @@ class TextDb:
         return c
 
 
+    def get_distinct_lines_by_nick(self, nick):
+        sql = '''select distinct full_text from {} where nick=? order by date asc'''.format(self.table_name)
+        c = self.connection.cursor()
+        c.execute(sql, (nick,))
+        return c
+
+
     def get_line_count_by_nick(self, nick):
         sql = '''select count(full_text) from {} where nick=?'''.format(self.table_name)
+        c = self.connection.cursor()
+        c.execute(sql, (nick,))
+        return c.fetchone()[0]
+
+
+    def get_distinct_line_count_by_nick(self, nick):
+        sql = '''select count(distinct full_text) from {} where nick=?'''.format(self.table_name)
         c = self.connection.cursor()
         c.execute(sql, (nick,))
         return c.fetchone()[0]

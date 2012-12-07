@@ -12,3 +12,4 @@ ssl        = False
 
 # bot settings
 cmd_prefix = '@'
+ignore_prefixes = ['!', '@']

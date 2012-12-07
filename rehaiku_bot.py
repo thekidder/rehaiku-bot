@@ -44,7 +44,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         cmd,arguments = self._get_cmd(full_text)
         if cmd != None:
             self._process_cmd(respond_target, cmd, arguments, e)
-        elif full_text[:1] != config.cmd_prefix:
+        elif full_text[:1] not in config.ignore_prefixes:
             self._process_text(e)
 
 

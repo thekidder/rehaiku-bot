@@ -6,6 +6,7 @@ import irc.bot
 import calculations
 import config
 import textdb
+import user_utils
 from decorators import nick_command, stats_command
 
 
@@ -133,7 +134,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         except AttributeError:
             return
 
-        nicks = self.db.all_nicks()
+        nicks = user_utils.active_user(self.db)
         stats = dict()
         for nick in nicks:
             stats[nick] = round(stat_func(self.db, nick), 2)

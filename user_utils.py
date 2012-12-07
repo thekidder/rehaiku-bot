@@ -6,7 +6,7 @@ def active_users(db):
     filtered_nicks = list()
 
     for nick in nicks:
-        if is_user_active(db, nick) && not is_user_a_bot(nick):
+        if is_user_active(db, nick) and not is_user_a_bot(nick):
             filtered_nicks.append(nick)
 
     return filtered_nicks

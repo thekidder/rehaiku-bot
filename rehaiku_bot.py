@@ -134,7 +134,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         except AttributeError:
             return
 
-        nicks = user_utils.active_user(self.db)
+        nicks = user_utils.active_users(self.db)
         stats = dict()
         for nick in nicks:
             stats[nick] = round(stat_func(self.db, nick), 2)

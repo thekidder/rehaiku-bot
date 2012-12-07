@@ -7,7 +7,7 @@ def active_users(db):
 
     for nick in nicks:
         if is_user_active(db, nick):
-            filter_nicks.append(nick)
+            filtered_nicks.append(nick)
 
     return filtered_nicks
 

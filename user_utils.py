@@ -6,7 +6,7 @@ def active_users(db):
     filtered_nicks = list()
 
     for nick in nicks:
-        if is_user_active(db, nick):
+        if is_user_active(db, nick) && not is_user_a_bot(nick):
             filtered_nicks.append(nick)
 
     return filtered_nicks
@@ -20,3 +20,7 @@ def is_user_active(db, nick):
     num = db.get_distinct_line_count_since_date(nick, date.isoformat())
 
     return num > 15
+
+
+def is_user_a_bot(nick):
+    return nick[-1] == '^'

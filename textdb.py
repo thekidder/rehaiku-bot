@@ -53,6 +53,13 @@ class TextDb:
         return c.fetchone()[0]
 
 
+    def get_line_count_like_pattern(self, nick, pattern):
+        sql = '''select count(full_text) from {} where nick=? and full_text like ?'''.format(self.table_name)
+        c = self.connection.cursor()
+        c.execute(sql, (nick,pattern,))
+        return c.fetchone()[0]
+
+
     def get_distinct_line_count_since_date(self, nick, date):
         sql = '''select count(distinct full_text) from {} where nick=? and date>?'''.format(self.table_name)
         c = self.connection.cursor()

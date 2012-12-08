@@ -16,7 +16,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def __init__(self, server_list, nick, name, channel, recon_interval=60, **connect_params):
         super(RehaikuBot, self).__init__(server_list, nick, name, recon_interval, **connect_params)
         self.channel = channel
-        self.cmds = ['stats', 'haiku', 'replay', 'pretentious', 'leaderboard', 'loserboard']
+        self.cmds = ['stats', 'haiku', 'replay', 'pretentious', 'leaderboard', 'loserboard', 'percentlol']
         self.db = textdb.TextDb()
 
 
@@ -154,3 +154,10 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def _do_pretentious(self, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_pretentious")
         return "pretentious"
+
+
+    @nick_command
+    @stats_command("{1}'s lol percentage is {0:.3}")
+    def _do_percentlol(self, respond_target, cmd, arguments, e, nick):
+        logger.debug('_do_percentlol')
+        return 'percentlol'

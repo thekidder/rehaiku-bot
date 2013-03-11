@@ -1,5 +1,6 @@
 import logging
 import operator
+import re
 
 import irc.bot
 
@@ -16,7 +17,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def __init__(self, server_list, nick, name, channel, recon_interval=60, **connect_params):
         super(RehaikuBot, self).__init__(server_list, nick, name, recon_interval, **connect_params)
         self.channel = channel
-        self.cmds = ['stats', 'haiku', 'replay', 'pretentious', 'leaderboard', 'loserboard', 'percentlol']
+        self.cmds = ['stats', 'haiku', 'replay', 'conv', 'pretentious', 'leaderboard', 'loserboard', 'percentlol']
         self.db = textdb.TextDb()
 
 
@@ -103,6 +104,16 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         else:
             self.connection.privmsg(respond_target, "{} has no history!".format(nick))
 
+    @nick_command
+    def _do_conv(self, respond_target, cmd, arguments, e, nick):
+        logger.debug("_do_conv")
+        
+        line = self.db.get_random_line(nick, e.target)
+        if line != None:
+            self.connection.privmsg(respond_target, "<{}> {}".format(nick, line))
+            nick_match = re.match('([^:]*):', line)
+            if nick_match:
+                self._do_conv(respond_target, cmd, arguments, e, nick_match.group(1))
 
     def _do_leaderboard(self, respond_target, cmd, arguments, e):
         logger.debug("_do_leaderboard")

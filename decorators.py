@@ -2,8 +2,9 @@ import calculations
 
 
 def nick_command(fn):
-    def wrapped(self, respond_target, cmd, arguments, e):
-        nick = _get_cmd_nick(arguments, e)
+    def wrapped(self, respond_target, cmd, arguments, e, nick=None):
+        if nick is None:
+            nick = _get_cmd_nick(arguments, e)
         if nick == None:
             return
 

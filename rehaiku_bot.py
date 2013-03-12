@@ -17,7 +17,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def __init__(self, server_list, nick, name, channel, recon_interval=60, **connect_params):
         super(RehaikuBot, self).__init__(server_list, nick, name, recon_interval, **connect_params)
         self.channel = channel
-        self.cmds = ['stats', 'haiku', 'replay', 'conv', 'pretentious', 'leaderboard', 'loserboard', 'percentlol']
+        self.cmds = ['stats', 'haiku', 'replay', 'conv', 'pretentious', 'leaderboard', 'loserboard', 'percentlol', 'spammy']
         self.db = textdb.TextDb()
 
 
@@ -36,8 +36,9 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
 
 
     def on_privmsg(self, c, e):
-        logger.debug("Got private msg {} (from {}, to {})".format(e.arguments, e.source.nick, e.target))
-        self._process_msg(e.source.nick, e)
+        pass # ignore PMs
+        #logger.debug("Got private msg {} (from {}, to {})".format(e.arguments, e.source.nick, e.target))
+        #self._process_msg(e.source.nick, e)
 
 
     def _process_msg(self, respond_target, e):
@@ -140,6 +141,9 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
 
 
     def _leaderboard(self, respond_target, stat_name, reverse):
+        if stat_name == 'pretentious':
+            return
+
         try:
             stat_func = getattr(calculations, stat_name)
         except AttributeError:
@@ -172,3 +176,10 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def _do_percentlol(self, respond_target, cmd, arguments, e, nick):
         logger.debug('_do_percentlol')
         return 'percentlol'
+
+
+    @nick_command
+    @stats_command("{1}'s spamminess is {0:.3}")
+    def _do_spammy(self, respond_target, cmd, arguments, e, nick):
+        logger.debug('_do_spammy')
+        return 'spammy'

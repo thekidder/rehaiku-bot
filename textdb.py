@@ -86,6 +86,18 @@ class TextDb:
         else:
             return None
 
+    def get_random_line_like(self, nick, source, like):
+        sql = '''select distinct full_text from {} where nick=? and ''' +
+        '''target=? and full_text like ? order by random() limit 1'''
+        sql = sql.format(self.table_name)
+        c = self.connection.cursor()
+        c.execute(sql, (nick, source, like))
+
+        row = c.fetchone()
+        if row is not None:
+            return row[0]
+        else:
+            return None
 
     def add_line(self, nick, target, full_text):
         sql = '''insert into {} values (?,?,?,?)'''.format(self.table_name)

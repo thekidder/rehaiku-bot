@@ -1,5 +1,6 @@
 import logging
 import operator
+import random
 import re
 
 import irc.bot
@@ -108,13 +109,42 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     @nick_command
     def _do_conv(self, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_conv")
-        
-        line = self.db.get_random_line(nick, e.target)
-        if line != None:
-            self.connection.privmsg(respond_target, "<{}> {}".format(nick, line))
+
+        nick_match = None
+        tries = 20
+        while not nick_match:
+            line = self.db.get_random_line_like(nick, e.target, '%:%')
+            if line is None:  # no directed lines by the user
+                logger.debug('No directed lines by the user')
+                return
             nick_match = re.match('([^:]*):', line)
-            if nick_match:
-                self._do_conv(respond_target, cmd, arguments, e, nick_match.group(1))
+            logger.debug(nick_match)
+            tries -= 1
+            if tries == 0:
+                logger.debug(line)
+                logger.warning(
+                    "Something's gone horribly wrong. " +
+                    "Giving up on conversation"
+                )
+                return
+
+        self.connection.privmsg(respond_target, "<{}> {}".format(nick, line))
+
+        if nick_match:
+            next_nick = nick_match.group(1)
+            if random.randint(0, 5) == 0:
+                # 1/6 chance that we end the conversation means average
+                # conversation length is 5 lines
+                line = self.db.get_random_line(next_nick, e.target)
+                self.connection.privmsg(
+                    respond_target, "<{}> {}".format(next_nick, line)
+                )
+            else:
+                self._do_conv(respond_target, cmd, arguments, e, next_nick)
+        else:
+            logger.error(
+                ('''"{}" contains a nick according to the database, ''' +
+                 '''but it really doesn't''').format(line))
 
     def _do_leaderboard(self, respond_target, cmd, arguments, e):
         logger.debug("_do_leaderboard")

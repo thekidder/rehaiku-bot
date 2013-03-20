@@ -128,8 +128,6 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
                 )
                 return
 
-        self.connection.privmsg(respond_target, "<{}> {}".format(nick, line))
-
         if nick_match:
             next_nick = nick_match.group(1)
             if random.randint(0, 5) == 0:
@@ -145,6 +143,8 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
             logger.error(
                 ('''"{}" contains a nick according to the database, ''' +
                  '''but it really doesn't''').format(line))
+
+        self.connection.privmsg(respond_target, "<{}> {}".format(nick, line))
 
     def _do_leaderboard(self, respond_target, cmd, arguments, e):
         logger.debug("_do_leaderboard")

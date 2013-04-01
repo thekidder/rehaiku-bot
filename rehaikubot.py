@@ -149,35 +149,28 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
 
     def _do_leaderboard(self, respond_target, cmd, arguments, e):
         logger.debug("_do_leaderboard")
-
-        arguments = arguments.split()
-        if len(arguments) != 1:
-            return
-
-        stat_name = arguments[0]
-
-        return self._leaderboard(respond_target, stat_name, False)
+        return self._leaderboard(respond_target, arguments,  False)
 
 
     def _do_loserboard(self, respond_target, cmd, arguments, e):
         logger.debug("_do_loserboard")
+        return self._leaderboard(respond_target, arguments,  True)
 
+
+    def _leaderboard(self, respond_target, arguments, reverse):
         arguments = arguments.split()
         if len(arguments) != 1:
+            self._leaderboard_help(respond_target)
             return
 
         stat_name = arguments[0]
 
-        return self._leaderboard(respond_target, stat_name, True)
-
-
-    def _leaderboard(self, respond_target, stat_name, reverse):
-        if stat_name == 'pretentious':
-            return
-
         try:
+            if stat_name not in calculations.calculations:
+                raise AttributeError
             stat_func = getattr(calculations, stat_name)
         except AttributeError:
+            self._leaderboard_help(respond_target)
             return
 
         nicks = user_utils.active_users(self.db)
@@ -193,6 +186,12 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         num = min(len(all), 5)
         for i in range(num):
             self.connection.privmsg(respond_target, "{:20}: {:6}".format(all[i][0], all[i][1]))
+
+
+    def _leaderboard_help(self, respond_target):
+        logger.debug('_leaderboard_help')
+        all = ', '.join(calculations.calculations)
+        self.connection.privmsg(respond_target, 'Available leaderboard commands are {}'.format(all))
 
 
     @nick_command

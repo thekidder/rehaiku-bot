@@ -3,7 +3,7 @@ import re
 import nltk
 from nltk.corpus import cmudict
 
-import flesch_kincaid
+import fleschkincaid
 
 
 cmu = cmudict.dict()
@@ -45,7 +45,7 @@ def reading_level(db, nick):
 
     avg = 0
     for s in all_sentences:
-        l = flesch_kincaid.grade_level(s)
+        l = fleschkincaid.grade_level(s)
         if l > 0.0:
             avg += l
 

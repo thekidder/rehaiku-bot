@@ -1,7 +1,7 @@
 # Flesch-Kincaid Grade level analysis of text.
 import nltk
 
-import text_utils
+import textutils
 
 
 def grade_level(text):
@@ -11,10 +11,10 @@ def grade_level(text):
     totalsentences = len(sentences)
     for sentence in sentences:
         words = nltk.tokenize.word_tokenize(sentence)
-        words = [text_utils.reduce(word) for word in words]
+        words = [textutils.reduce(word) for word in words]
         words = [word for word in words if word != '']
         totalwords += len(words)
-        syllables = [text_utils.syllable_count(word) for word in words]
+        syllables = [textutils.syllable_count(word) for word in words]
         totalsyllables += sum(syllables)
         totalwords = float(totalwords)
 

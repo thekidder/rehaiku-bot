@@ -1,4 +1,4 @@
-import text_utils
+import textutils
 
 
 calculations = ['stats', 'spammy', 'percentlol']
@@ -8,7 +8,7 @@ def stats(db, nick):
 
 
 def pretentious(db, nick):
-    return text_utils.reading_level(db, nick)
+    return textutils.reading_level(db, nick)
 
 
 def spammy(db, nick):

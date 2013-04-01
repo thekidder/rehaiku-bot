@@ -8,7 +8,7 @@ import irc.bot
 import calculations
 import config
 import textdb
-import user_utils
+import userutils
 from decorators import nick_command, stats_command
 
 
@@ -173,7 +173,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
             self._leaderboard_help(respond_target)
             return
 
-        nicks = user_utils.active_users(self.db)
+        nicks = userutils.active_users(self.db)
         stats = dict()
         for nick in nicks:
             stats[nick] = round(stat_func(self.db, nick), 2)

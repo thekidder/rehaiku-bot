@@ -6,7 +6,7 @@ import ssl
 import irc.connection
 
 import config
-import rehaiku_bot
+import rehaikubot
 
 
 logger = logging.getLogger(__name__)
@@ -19,11 +19,11 @@ def main():
     else:
         factory = irc.connection.Factory()
 
-    bot = rehaiku_bot.RehaikuBot(
+    bot = rehaikubot.RehaikuBot(
         config.servers,
         config.nick,
         config.name,
-        config.channel,
+        config.channels,
         60,
         connect_factory=factory)
 

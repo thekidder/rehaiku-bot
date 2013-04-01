@@ -15,16 +15,17 @@ from decorators import nick_command, stats_command
 logger = logging.getLogger(__name__)
 
 class RehaikuBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, server_list, nick, name, channel, recon_interval=60, **connect_params):
+    def __init__(self, server_list, nick, name, channels, recon_interval=60, **connect_params):
         super(RehaikuBot, self).__init__(server_list, nick, name, recon_interval, **connect_params)
-        self.channel = channel
+        self._channels = channels
         self.cmds = ['stats', 'haiku', 'replay', 'conv', 'pretentious', 'leaderboard', 'loserboard', 'percentlol', 'spammy']
         self.db = textdb.TextDb()
 
 
     def on_welcome(self, c, e):
         logger.info("Connected to %s", e.source)
-        c.join(self.channel)
+        for channel in self._channels:
+            c.join(channel)
 
 
     def on_join(self, c, e):

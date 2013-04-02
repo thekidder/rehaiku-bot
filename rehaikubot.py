@@ -173,19 +173,26 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
             self._leaderboard_help(respond_target)
             return
 
-        nicks = userutils.active_users(self.db)
-        stats = dict()
-        for nick in nicks:
-            stats[nick] = round(stat_func(self.db, nick), 2)
-
-        all = sorted(stats.items(), key=operator.itemgetter(1), reverse=not reverse)
         name = 'leaderboard'
         if reverse:
             name = 'loserboard'
+
+
+        command = '{} {}'.format(name, arguments)
+        executor = self.db.create_executor(command)
+
+        nicks = userutils.active_users(executor)
+        stats = dict()
+        for nick in nicks:
+            stats[nick] = round(stat_func(executor, nick), 2)
+
+        all = sorted(stats.items(), key=operator.itemgetter(1), reverse=not reverse)
         self.connection.privmsg(respond_target, "{} for {}:".format(name, stat_name))
         num = min(len(all), 5)
         for i in range(num):
             self.connection.privmsg(respond_target, "{:20}: {:6}".format(all[i][0], all[i][1]))
+
+        executor.print_stats()
 
 
     def _leaderboard_help(self, respond_target):

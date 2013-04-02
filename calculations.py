@@ -1,19 +1,20 @@
+import queries
 import textutils
 
 
 calculations = ['stats', 'spammy', 'percentlol']
 
-def stats(db, nick):
-    return db.get_distinct_line_count_by_nick(nick)
+def stats(executor, nick):
+    return queries.get_distinct_line_count_by_nick(executor, nick)
 
 
-def pretentious(db, nick):
-    return textutils.reading_level(db, nick)
+def pretentious(executor, nick):
+    return textutils.reading_level(executor, nick)
 
 
-def spammy(db, nick):
-    t = db.get_line_count_by_nick(nick) * 1.0
-    d = db.get_distinct_line_count_by_nick(nick)
+def spammy(executor, nick):
+    t = queries.get_line_count_by_nick(executor, nick) * 1.0
+    d = queries.get_distinct_line_count_by_nick(executor, nick)
 
     if d == 0:
         return 0.0
@@ -21,11 +22,11 @@ def spammy(db, nick):
     return t / d
 
 
-def percentlol(db, nick):
-    total = db.get_line_count_by_nick(nick)
+def percentlol(executor, nick):
+    total = queries.get_line_count_by_nick(executor, nick)
 
     if total == 0:
         return 0.0
 
-    lol = db.get_line_count_like_pattern(nick, 'lol')
+    lol = queries.get_line_count_like_pattern(executor, nick, 'lol')
     return (lol / total) * 100.0

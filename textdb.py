@@ -1,6 +1,7 @@
 import datetime
 import logging
 import sqlite3
+import sqlutils
 
 
 logger = logging.getLogger(__name__)
@@ -8,107 +9,31 @@ logger = logging.getLogger(__name__)
 class TextDb:
     def __init__(self, db_name='text.db'):
         self.db_name = db_name
-        self.table_name = 'text'
         self._connect()
 
 
     def _connect(self):
         self.connection = sqlite3.connect(self.db_name)
+        self.cursor = self.connection.cursor()
         if not self._exists():
             self._create()
 
 
     def _create(self):
-        sql = '''create table {} (date text, nick text, target text, full_text text)'''.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql)
-        self.connection.commit()
+        sql = '''create table text (date text, nick text, target text, full_text text)'''
+        self.cursor.execute(sql)
 
 
     def _exists(self):
         sql = '''select count(type) from sqlite_master where type='table' and name=?'''
-        c = self.connection.cursor()
-        c.execute(sql, (self.table_name,))
-        return c.fetchone()[0] == 1
+        self.cursor.execute(sql, ('text',))
+        return self.cursor.fetchone()[0] == 1
 
 
-    def get_lines_by_nick(self, nick):
-        sql = '''select full_text from {} where nick=? order by date asc'''.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql, (nick,))
-        return c
+    def __del__(self):
+        self.cursor.close
+        self.connection.close()
 
 
-    def get_distinct_lines_by_nick(self, nick):
-        sql = '''select distinct full_text from {} where nick=? order by date asc'''.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql, (nick,))
-        return c
-
-
-    def get_line_count_by_nick(self, nick):
-        sql = '''select count(full_text) from {} where nick=?'''.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql, (nick,))
-        return c.fetchone()[0]
-
-
-    def get_line_count_like_pattern(self, nick, pattern):
-        sql = '''select count(full_text) from {} where nick=? and full_text like ?'''.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql, (nick,pattern,))
-        return c.fetchone()[0]
-
-
-    def get_distinct_line_count_since_date(self, nick, date):
-        sql = '''select count(distinct full_text) from {} where nick=? and date>?'''.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql, (nick,date,))
-        return c.fetchone()[0]
-
-
-    def get_distinct_line_count_by_nick(self, nick):
-        sql = '''select count(distinct full_text) from {} where nick=?'''.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql, (nick,))
-        return c.fetchone()[0]
-
-
-    def get_random_line(self, nick, source):
-        sql = '''select distinct full_text from {} where nick=? and target=? order by random() limit 1'''
-        sql = sql.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql, (nick,source,))
-
-        row = c.fetchone()
-        if row != None:
-            return row[0]
-        else:
-            return None
-
-    def get_random_line_like(self, nick, source, like):
-        sql = ('''select distinct full_text from {} where nick=? and ''' +
-               '''target=? and full_text like ? order by random() limit 1''')
-        sql = sql.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql, (nick, source, like))
-
-        row = c.fetchone()
-        if row is not None:
-            return row[0]
-        else:
-            return None
-
-    def add_line(self, nick, target, full_text):
-        sql = '''insert into {} values (?,?,?,?)'''.format(self.table_name)
-        now = datetime.datetime.utcnow().isoformat()
-        c = self.connection.cursor()
-        c.execute(sql, (now,nick,target,full_text,))
-        self.connection.commit()
-
-
-    def all_nicks(self):
-        sql = '''select distinct(nick) from {} order by nick'''.format(self.table_name)
-        c = self.connection.cursor()
-        c.execute(sql)
-        return [nick[0] for nick in c.fetchall()]
+    def create_executor(self, command):
+        return sqlutils.QueryExecutor(command, self.cursor)

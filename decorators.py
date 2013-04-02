@@ -18,8 +18,11 @@ def stats_command(string):
         def wrapped(self, respond_target, cmd, arguments, e, nick):
             stat_name = fn(self, respond_target, cmd, arguments, e, nick)
             if stat_name != None:
-                answer = getattr(calculations, stat_name)(self.db, nick)
+                command = '{} {}'.format(cmd, arguments)
+                executor = self.db.create_executor(command)
+                answer = getattr(calculations, stat_name)(executor, nick)
                 self.connection.privmsg(respond_target, string.format(answer, nick))
+                executor.print_stats()
 
         return wrapped
 

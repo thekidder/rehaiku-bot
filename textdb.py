@@ -31,7 +31,9 @@ class TextDb:
 
 
     def __del__(self):
-        self.cursor.close
+        logger.info('destroying connection')
+        self.cursor.close()
+        self.connection.commit()
         self.connection.close()
 
 

@@ -1,3 +1,6 @@
+import datetime
+
+
 def get_lines_by_nick(executor, nick):
     sql = '''select full_text from text where nick=? order by date asc'''
     return exector.query(sql, (nick,))

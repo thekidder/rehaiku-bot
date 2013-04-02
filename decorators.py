@@ -8,21 +8,22 @@ def nick_command(fn):
         if nick == None:
             return
 
-        return fn(self, respond_target, cmd, arguments, e, nick)
+        command = '{} {}'.format(cmd, arguments)
+        executor = self.db.create_executor(command)
+        r =  fn(self, executor, respond_target, cmd, arguments, e, nick)
+        executor.print_stats()
+        return r
 
     return wrapped
 
 
 def stats_command(string):
     def decorator(fn):
-        def wrapped(self, respond_target, cmd, arguments, e, nick):
+        def wrapped(self, executor, respond_target, cmd, arguments, e, nick):
             stat_name = fn(self, respond_target, cmd, arguments, e, nick)
             if stat_name != None:
-                command = '{} {}'.format(cmd, arguments)
-                executor = self.db.create_executor(command)
                 answer = getattr(calculations, stat_name)(executor, nick)
                 self.connection.privmsg(respond_target, string.format(answer, nick))
-                executor.print_stats()
 
         return wrapped
 

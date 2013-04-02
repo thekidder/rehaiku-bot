@@ -7,6 +7,7 @@ import irc.bot
 
 import calculations
 import config
+import queries
 import textdb
 import userutils
 from decorators import nick_command, stats_command
@@ -55,7 +56,9 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def _process_text(self, e):
         txt = e.arguments[0]
         logger.debug("_process_text: " + txt)
-        self.db.add_line(e.source.nick, e.target, txt)
+        executor = self.db.create_executor('_process_text')
+        queries.add_line(executor, e.source.nick, e.target, txt)
+        self.db.connection.commit()
 
 
     def _get_cmd(self, cmd):
@@ -80,13 +83,6 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         getattr(self, '_do_' + cmd)(respond_target, cmd, arguments, e)
 
 
-    @nick_command
-    @stats_command('I have collected {} lines of dialog from {}.')
-    def _do_stats(self, respond_target, cmd, arguments, e, nick):
-        logger.debug("_do_stats")
-        return "stats"
-
-
     def _do_haiku(self, respond_target, cmd, arguments, e):
         arguments = arguments.split()
 
@@ -98,23 +94,23 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
 
 
     @nick_command
-    def _do_replay(self, respond_target, cmd, arguments, e, nick):
+    def _do_replay(self, executor, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_replay")
 
-        line = self.db.get_random_line(nick,e.target)
+        line = queries.get_random_line(executor, nick, e.target)
         if line != None:
             self.connection.privmsg(respond_target, "<{}> {}".format(nick, line))
         else:
             self.connection.privmsg(respond_target, "{} has no history!".format(nick))
 
     @nick_command
-    def _do_conv(self, respond_target, cmd, arguments, e, nick):
+    def _do_conv(self, executor, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_conv")
 
         nick_match = None
         tries = 20
         while not nick_match:
-            line = self.db.get_random_line_like(nick, e.target, '%:%')
+            line = queries.get_random_line_like(executor, nick, e.target, '%:%')
             if line is None:  # no directed lines by the user
                 logger.debug('No directed lines by the user')
                 return
@@ -134,18 +130,19 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
             if random.randint(0, 5) == 0:
                 # 1/6 chance that we end the conversation means average
                 # conversation length is 5 lines
-                line = self.db.get_random_line(next_nick, e.target)
+                line = queries.get_random_line(executor, next_nick, e.target)
                 self.connection.privmsg(
                     respond_target, "<{}> {}".format(next_nick, line)
                 )
             else:
-                self._do_conv(respond_target, cmd, arguments, e, next_nick)
+                self._do_conv(executor, respond_target, cmd, arguments, e, next_nick)
         else:
             logger.error(
                 ('''"{}" contains a nick according to the database, ''' +
                  '''but it really doesn't''').format(line))
 
         self.connection.privmsg(respond_target, "<{}> {}".format(nick, line))
+
 
     def _do_leaderboard(self, respond_target, cmd, arguments, e):
         logger.debug("_do_leaderboard")
@@ -177,7 +174,6 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         if reverse:
             name = 'loserboard'
 
-
         command = '{} {}'.format(name, arguments)
         executor = self.db.create_executor(command)
 
@@ -202,21 +198,28 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
 
 
     @nick_command
+    @stats_command('I have collected {} lines of dialog from {}.')
+    def _do_stats(self, executor, respond_target, cmd, arguments, e, nick):
+        logger.debug("_do_stats")
+        return "stats"
+
+
+    @nick_command
     @stats_command("{1}'s pretentiousness level is {0:.3}")
-    def _do_pretentious(self, respond_target, cmd, arguments, e, nick):
+    def _do_pretentious(self, executor, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_pretentious")
         return "pretentious"
 
 
     @nick_command
     @stats_command("{1}'s lol percentage is {0:.3}")
-    def _do_percentlol(self, respond_target, cmd, arguments, e, nick):
+    def _do_percentlol(self, executor, respond_target, cmd, arguments, e, nick):
         logger.debug('_do_percentlol')
         return 'percentlol'
 
 
     @nick_command
     @stats_command("{1}'s spamminess is {0:.3}")
-    def _do_spammy(self, respond_target, cmd, arguments, e, nick):
+    def _do_spammy(self, executor, respond_target, cmd, arguments, e, nick):
         logger.debug('_do_spammy')
         return 'spammy'

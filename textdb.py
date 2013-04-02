@@ -1,6 +1,7 @@
-import datetime
 import logging
 import sqlite3
+
+import schema
 import sqlutils
 
 
@@ -15,19 +16,16 @@ class TextDb:
     def _connect(self):
         self.connection = sqlite3.connect(self.db_name)
         self.cursor = self.connection.cursor()
-        if not self._exists():
-            self._create()
+        executor = self.create_executor('upgrade')
+        v = schema.version(executor)
+        while v < schema.LATEST_VERSION:
+            fn = getattr(schema, 'v{}_to_v{}'.format(v, v+1))
+            logger.info('upgrading from v{} to v{}...'.format(v, v+1))
+            fn(executor)
+            v += 1
+        executor.print_stats()
+        logger.info('db version is latest ({})'.format(schema.LATEST_VERSION))
 
-
-    def _create(self):
-        sql = '''create table text (date text, nick text, target text, full_text text)'''
-        self.cursor.execute(sql)
-
-
-    def _exists(self):
-        sql = '''select count(type) from sqlite_master where type='table' and name=?'''
-        self.cursor.execute(sql, ('text',))
-        return self.cursor.fetchone()[0] == 1
 
 
     def __del__(self):

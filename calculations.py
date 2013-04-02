@@ -2,14 +2,14 @@ import queries
 import textutils
 
 
-calculations = ['stats', 'spammy', 'percentlol']
+calculations = ['stats', 'spammy', 'percentlol', 'pretentious']
 
 def stats(executor, nick):
     return queries.get_distinct_line_count_by_nick(executor, nick)
 
 
 def pretentious(executor, nick):
-    return textutils.reading_level(executor, nick)
+    return queries.reading_level(executor, nick)
 
 
 def spammy(executor, nick):

@@ -1,5 +1,7 @@
 import datetime
 
+import fleschkincaid
+
 
 def get_lines_by_nick(executor, nick):
     sql = '''select full_text from text where nick=? order by date asc'''
@@ -31,6 +33,11 @@ def get_distinct_line_count_by_nick(executor, nick):
     return executor.query_one_row(sql, (nick,))[0]
 
 
+def reading_level(executor, nick):
+    sql = '''select avg(pretentious) from text where nick=?'''
+    return executor.query_one_row(sql, (nick,))[0]
+
+
 def get_random_line(executor, nick, source):
     sql = '''select distinct full_text from text where nick=? and target=? order by random() limit 1'''
     row = executor.query_one_row(sql, (nick,source,))
@@ -51,9 +58,14 @@ def get_random_line_like(executor, nick, source, like):
 
 
 def add_line(executor, nick, target, full_text):
-    sql = '''insert into text values (?,?,?,?)'''
+    sql = '''insert into text values (?,?,?,?,?)'''
     now = datetime.datetime.utcnow().isoformat()
-    executor.execute(sql, (now,nick,target,full_text,))
+    rl = _sentence_reading_level(full_text)
+    executor.execute(sql, (now,nick,target,full_text,rl,))
+
+
+def _sentence_reading_level(s):
+    return max(0.0, fleschkincaid.grade_level(s))
 
 
 def all_nicks(executor):

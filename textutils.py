@@ -36,20 +36,3 @@ def distinct_sentences(executor, nick):
         all_sentences.extend(nltk.tokenize.sent_tokenize(text))
 
     return all_sentences
-
-
-def reading_level(executor, nick):
-    all_sentences = distinct_sentences(executor, nick)
-
-    if len(all_sentences) == 0:
-        return 0.0
-
-    avg = 0
-    for s in all_sentences:
-        l = fleschkincaid.grade_level(s)
-        if l > 0.0:
-            avg += l
-
-    avg /= len(all_sentences)
-
-    return avg

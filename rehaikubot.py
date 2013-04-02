@@ -107,6 +107,10 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def _do_conv(self, executor, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_conv")
 
+        self._conv_impl(executor, respond_target, cmd, arguments, e, nick)
+
+
+    def _conv_impl(self, executor, respond_target, cmd, arguments, e, nick):
         nick_match = None
         tries = 20
         while not nick_match:
@@ -135,7 +139,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
                     respond_target, "<{}> {}".format(next_nick, line)
                 )
             else:
-                self._do_conv(executor, respond_target, cmd, arguments, e, next_nick)
+                self._conv_impl(executor, respond_target, cmd, arguments, e, next_nick)
         else:
             logger.error(
                 ('''"{}" contains a nick according to the database, ''' +

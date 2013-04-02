@@ -20,7 +20,7 @@ def nick_command(fn):
 def stats_command(string):
     def decorator(fn):
         def wrapped(self, executor, respond_target, cmd, arguments, e, nick):
-            stat_name = fn(self, respond_target, cmd, arguments, e, nick)
+            stat_name = fn(self, executor, respond_target, cmd, arguments, e, nick)
             if stat_name != None:
                 answer = getattr(calculations, stat_name)(executor, nick)
                 self.connection.privmsg(respond_target, string.format(answer, nick))

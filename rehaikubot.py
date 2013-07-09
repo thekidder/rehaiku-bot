@@ -189,6 +189,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         all = sorted(stats.items(), key=operator.itemgetter(1), reverse=not reverse)
         self.connection.privmsg(respond_target, "{} for {}:".format(name, stat_name))
         num = min(len(all), 5)
+        logger.debug("got {} targets for leaderboard (of out total list of {})".format(num, len(all)))
         for i in range(num):
             self.connection.privmsg(respond_target, "{:20}: {:6}".format(all[i][0], all[i][1]))
 

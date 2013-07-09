@@ -71,3 +71,13 @@ def _sentence_reading_level(s):
 def all_nicks(executor):
     sql = '''select distinct(nick) from text order by nick'''
     return [nick[0] for nick in executor.query_all_rows(sql)]
+
+
+def all_active_nicks(executor):
+    time = datetime.timedelta(weeks=1)
+    date = datetime.datetime.utcnow()
+    date = (date - time).isoformat()
+
+
+    sql = '''select nick from text where date>? group by nick having count(nick)>15 order by nick'''
+    return [nick[0] for nick in executor.query_all_rows(sql, (date,))]

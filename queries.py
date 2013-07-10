@@ -47,6 +47,13 @@ def get_random_line(executor, nick, source):
         return None
 
 
+def get_random_lines_like(executor, nick, source, like,count):
+    sql = ('''select distinct full_text from text where nick=? and ''' +
+           '''target=? and full_text like ? order by random() limit ?''')
+    rows = executor.query_all_rows(sql, (nick,source,like,count,))
+    return [row[0] for row in rows]
+
+
 def get_random_line_like(executor, nick, source, like):
     sql = ('''select distinct full_text from text where nick=? and ''' +
            '''target=? and full_text like ? order by random() limit 1''')

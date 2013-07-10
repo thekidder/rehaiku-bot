@@ -134,9 +134,9 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
             if random.randint(0, 5) == 0:
                 # 1/6 chance that we end the conversation means average
                 # conversation length is 5 lines
-                line = queries.get_random_line(executor, next_nick, e.target)
+                firstline = queries.get_random_line(executor, next_nick, e.target)
                 self.connection.privmsg(
-                    respond_target, "<{}> {}".format(next_nick, line)
+                    respond_target, "<{}> {}".format(next_nick, firstline)
                 )
             else:
                 self._conv_impl(executor, respond_target, cmd, arguments, e,

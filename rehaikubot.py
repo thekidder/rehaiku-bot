@@ -106,9 +106,12 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def _do_conv(self, executor, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_conv")
 
-        self._conv_impl(executor, respond_target, cmd, arguments, e, nick)
+        all_nicks = query.all_nicks(executor)
+        self._conv_impl(executor, respond_target, cmd, arguments, e, nick,
+                        all_nicks)
 
-    def _conv_impl(self, executor, respond_target, cmd, arguments, e, nick):
+    def _conv_impl(self, executor, respond_target, cmd, arguments, e, nick,
+                   all_nicks):
         nick_match = None
         tries = 20
         lines = queries.get_random_lines_like(executor, nick, e.target, '%:%',
@@ -118,9 +121,13 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
             return
         for line in lines:
             nick_match = re.match('([^:]*):', line)
-            if nick_match.group(1) not in queries.all_nicks(executor):
+            logger.debug(nick_match.group(1))
+
+            if nick_match.group(1) not in all_nicks:
                 nick_match = None  # Didn't really find a nick
-            logger.debug(nick_match)
+
+            if nick_match:
+                break
 
         if nick_match:
             next_nick = nick_match.group(1)

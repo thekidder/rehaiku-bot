@@ -141,7 +141,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
                 )
             else:
                 self._conv_impl(executor, respond_target, cmd, arguments, e,
-                                next_nick)
+                                next_nick, all_nicks)
         else:
             logger.error(
                 ('''"{}" contains a nick according to the database, ''' +

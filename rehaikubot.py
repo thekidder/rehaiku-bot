@@ -111,32 +111,26 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def _conv_impl(self, executor, respond_target, cmd, arguments, e, nick):
         nick_match = None
         tries = 20
-        while not nick_match:
-            line = queries.get_random_line_like(executor, nick, e.target, '%:%')
-            if line is None:  # no directed lines by the user
-                logger.debug('No directed lines by the user')
-                return
+        lines = queries.get_random_lines_like(executor, nick, e.target, '%:%',
+                                              tries)
+        if not lines:
+            logger.debug('No directed lines by the user')
+            return
+        for line in lines:
             nick_match = re.match('([^:]*):', line)
             if nick_match.group(1) not in queries.all_nicks(executor):
                 nick_match = None  # Didn't really find a nick
             logger.debug(nick_match)
-            tries -= 1
-            if tries == 0:
-                logger.debug(line)
-                logger.warning(
-                    "Something's gone horribly wrong. " +
-                    "Giving up on conversation"
-                )
-                return
 
         if nick_match:
             next_nick = nick_match.group(1)
             if random.randint(0, 5) == 0:
                 # 1/6 chance that we end the conversation means average
                 # conversation length is 5 lines
-                line = queries.get_random_line(executor, next_nick, e.target)
+                firstline = queries.get_random_line(
+                    executor, next_nick,e.target)
                 self.connection.privmsg(
-                    respond_target, "<{}> {}".format(next_nick, line)
+                    respond_target, "<{}> {}".format(next_nick, firstline)
                 )
             else:
                 self._conv_impl(executor, respond_target, cmd, arguments, e,
@@ -144,7 +138,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
         else:
             logger.error(
                 ('''"{}" contains a nick according to the database, ''' +
-                 '''but it really doesn't''').format(line))
+                 '''but it really doesn't; aborting here''').format(line))
 
         self.connection.privmsg(respond_target, "<{}> {}".format(nick, line))
 

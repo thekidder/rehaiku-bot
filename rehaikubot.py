@@ -106,7 +106,7 @@ class RehaikuBot(irc.bot.SingleServerIRCBot):
     def _do_conv(self, executor, respond_target, cmd, arguments, e, nick):
         logger.debug("_do_conv")
 
-        all_nicks = query.all_nicks(executor)
+        all_nicks = queries.all_nicks(executor)
         self._conv_impl(executor, respond_target, cmd, arguments, e, nick,
                         all_nicks)
 
